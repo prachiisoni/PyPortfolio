@@ -12,7 +12,9 @@ import plotly.graph_objects as go
 def plot_monte_carlo(
     portfolios,
     best_portfolio,
-    min_portfolio,
+    lowest_risk_portfolio,
+    frontier_risk=None,
+    frontier_return=None,
 ):
     """
     Interactive Monte Carlo visualization.
@@ -39,9 +41,9 @@ def plot_monte_carlo(
             "Sharpe": "Sharpe Ratio",
         },
         hover_data={
-            "Risk":":.2%",
-            "Return":":.2%",
-            "Sharpe":":.3f",
+            "Risk": ":.2%",
+            "Return": ":.2%",
+            "Sharpe": ":.3f",
         },
     )
 
@@ -64,8 +66,8 @@ def plot_monte_carlo(
     # Minimum Risk Portfolio
     fig.add_trace(
         go.Scatter(
-            x=[min_portfolio["Risk"]],
-            y=[min_portfolio["Return"]],
+            x=[lowest_risk_portfolio["Risk"]],
+            y=[lowest_risk_portfolio["Return"]],
             mode="markers",
             marker=dict(
                 size=15,
@@ -77,6 +79,22 @@ def plot_monte_carlo(
         )
     )
 
+    # Efficient Frontier
+    if frontier_risk is not None:
+
+        fig.add_trace(
+            go.Scatter(
+                x=frontier_risk,
+                y=frontier_return,
+                mode="lines",
+                line=dict(
+                    color="red",
+                    width=4,
+                ),
+                name="Efficient Frontier",
+            )
+        )
+
     fig.update_layout(
         width=1100,
         height=700,
@@ -87,6 +105,35 @@ def plot_monte_carlo(
             xanchor="left",
             x=0.01,
         ),
+    )
+
+    fig.show()
+
+def plot_portfolio_weights(
+    weights,
+    stocks,
+    title,
+):
+    """
+    Plot portfolio allocation as a pie chart.
+    """
+
+    fig = px.pie(
+        names=stocks,
+        values=weights,
+        title=title,
+        hole=0.4,
+    )
+
+    fig.update_traces(
+        textposition="inside",
+        textinfo="percent+label",
+    )
+
+    fig.update_layout(
+        width=700,
+        height=600,
+        template="plotly_white",
     )
 
     fig.show()

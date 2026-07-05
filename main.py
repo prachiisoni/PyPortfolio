@@ -20,9 +20,15 @@ from src.portfolio_analysis import (
     get_max_sharpe_portfolio,
     get_min_risk_portfolio,
 )
-from src.visualization import plot_monte_carlo
-from src.efficient_frontier import optimize_portfolio
-
+from src.visualization import (
+    plot_monte_carlo,
+    plot_portfolio_weights,
+)
+from src.efficient_frontier import (
+    optimize_portfolio,
+    minimum_variance_portfolio,
+)
+from src.frontier import generate_efficient_frontier
 
 STOCKS = [
     "AAPL",
@@ -44,16 +50,22 @@ def main():
         END_DATE,
     )
 
-    # Keep the order of stocks consistent
+    # Keep stock order consistent
     prices = prices[STOCKS]
 
     daily_returns = calculate_daily_returns(prices)
 
-    annual_returns = calculate_annual_returns(daily_returns)
+    annual_returns = calculate_annual_returns(
+        daily_returns,
+    )
 
-    covariance_matrix = calculate_covariance_matrix(daily_returns)
+    covariance_matrix = calculate_covariance_matrix(
+        daily_returns,
+    )
 
-    annual_volatility = calculate_annual_volatility(daily_returns)
+    annual_volatility = calculate_annual_volatility(
+        daily_returns,
+    )
 
     # -------------------------------------------------
     # Random Portfolio
@@ -88,7 +100,6 @@ def main():
     print(f"Expected Return   : {expected_return:.2%}")
     print(f"Portfolio Risk    : {portfolio_risk:.2%}")
     print(f"Sharpe Ratio      : {portfolio_sharpe:.3f}")
-
     print()
 
     # -------------------------------------------------
@@ -101,9 +112,13 @@ def main():
         STOCKS,
     )
 
-    best_portfolio = get_max_sharpe_portfolio(portfolios)
+    best_portfolio = get_max_sharpe_portfolio(
+        portfolios,
+    )
 
-    lowest_risk_portfolio = get_min_risk_portfolio(portfolios)
+    lowest_risk_portfolio = get_min_risk_portfolio(
+        portfolios,
+    )
 
     # -------------------------------------------------
     # SciPy Optimization
@@ -114,8 +129,18 @@ def main():
         covariance_matrix,
     )
 
+    min_variance = minimum_variance_portfolio(
+        annual_returns,
+        covariance_matrix,
+    )
+
+    frontier_risk, frontier_return = generate_efficient_frontier(
+        annual_returns,
+       covariance_matrix,
+    )
+
     # -------------------------------------------------
-    # Best Monte Carlo Portfolio
+    # Monte Carlo Best Sharpe
     # -------------------------------------------------
 
     print("=" * 60)
@@ -134,7 +159,7 @@ def main():
     print()
 
     # -------------------------------------------------
-    # Minimum Risk Portfolio
+    # Monte Carlo Minimum Risk
     # -------------------------------------------------
 
     print("=" * 60)
@@ -153,7 +178,7 @@ def main():
     print()
 
     # -------------------------------------------------
-    # SciPy Optimized Portfolio
+    # SciPy Maximum Sharpe
     # -------------------------------------------------
 
     print("=" * 60)
@@ -162,7 +187,6 @@ def main():
 
     print(f"Optimization Success : {optimal_portfolio['Success']}")
     print(f"Message              : {optimal_portfolio['Message']}")
-
     print()
 
     print(f"Expected Return : {optimal_portfolio['Return']:.2%}")
@@ -174,6 +198,29 @@ def main():
     for stock, weight in zip(STOCKS, optimal_portfolio["Weights"]):
         print(f"{stock:<8}: {weight:.2%}")
 
+    print()
+
+    # -------------------------------------------------
+    # SciPy Minimum Variance
+    # -------------------------------------------------
+
+    print("=" * 60)
+    print("SCIPY MINIMUM VARIANCE PORTFOLIO")
+    print("=" * 60)
+
+    print(f"Optimization Success : {min_variance['Success']}")
+    print(f"Message              : {min_variance['Message']}")
+    print()
+
+    print(f"Expected Return : {min_variance['Return']:.2%}")
+    print(f"Risk            : {min_variance['Risk']:.2%}")
+    print(f"Sharpe Ratio    : {min_variance['Sharpe']:.3f}")
+
+    print("\nWeights")
+
+    for stock, weight in zip(STOCKS, min_variance["Weights"]):
+        print(f"{stock:<8}: {weight:.2%}")
+
     # -------------------------------------------------
     # Visualization
     # -------------------------------------------------
@@ -182,8 +229,33 @@ def main():
         portfolios,
         best_portfolio,
         lowest_risk_portfolio,
+        frontier_risk,
+        frontier_return,
     )
 
+    plot_portfolio_weights(
+        best_portfolio["Weights"],
+        STOCKS,
+        "Monte Carlo - Best Sharpe Portfolio",
+    )
+
+    plot_portfolio_weights(
+        lowest_risk_portfolio["Weights"],
+        STOCKS,
+        "Monte Carlo - Minimum Risk Portfolio",
+    )
+
+    plot_portfolio_weights(
+        optimal_portfolio["Weights"],
+        STOCKS,
+        "SciPy - Maximum Sharpe Portfolio",
+    )
+
+    plot_portfolio_weights(
+        min_variance["Weights"],
+        STOCKS,
+        "SciPy - Minimum Variance Portfolio",
+    )
 
 if __name__ == "__main__":
     main()
