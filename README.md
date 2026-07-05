@@ -167,26 +167,6 @@ Displays thousands of simulated portfolios colored by Sharpe Ratio while highlig
 
 ---
 
-### Portfolio Allocation
-
-#### Random Portfolio
-
-![Random](images/random_portfolio.png)
-
-#### Maximum Sharpe Portfolio
-
-![Best](images/best_portfolio.png)
-
-#### Minimum Variance Portfolio
-
-![Minimum](images/minimum_portfolio.png)
-
-#### Optimized Portfolio
-
-![Optimized](images/optimized_portfolio.png)
-
----
-
 ## Engineering Highlights
 
 - Modular architecture with separation of concerns
